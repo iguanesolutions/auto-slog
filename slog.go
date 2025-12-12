@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	sysd "github.com/iguanesolutions/go-systemd/v5"
-	sysdjdslog "github.com/iguanesolutions/go-systemd/v5/journald/slog"
+	sysd "github.com/iguanesolutions/go-systemd/v6"
+	sysdjdslog "github.com/iguanesolutions/go-systemd/v6/journald/slog"
 	"github.com/mattn/go-isatty"
 )
 
@@ -34,19 +34,15 @@ func LogLevel(logLevelRequested string) slog.Level {
 // * If the output is a terminal, a standard text handler will be used
 // * If the program has bee started by systemd, a custom journald handler will be used
 // * Otherwise a standard JSON handler will be used
-func NewLogger(logLevel slog.Level) (logger *slog.Logger) {
+func NewLogger(opts slog.HandlerOptions) (logger *slog.Logger) {
 	// If output is a terminal, use a regular text logger
 	if isatty.IsTerminal(os.Stdout.Fd()) {
-		return slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-			Level: logLevel,
-		}))
+		return slog.New(slog.NewTextHandler(os.Stdout, &opts))
 	}
 	// If started by systemd, use a custom journald slog handler
 	if _, sysdStarted := sysd.GetInvocationID(); sysdStarted {
-		return slog.New(sysdjdslog.NewHandler(logLevel))
+		return slog.New(sysdjdslog.NewHandler(opts))
 	}
 	// Otherwise, use a JSON logger
-	return slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level: logLevel,
-	}))
+	return slog.New(slog.NewJSONHandler(os.Stdout, &opts))
 }
