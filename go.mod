@@ -1,4 +1,4 @@
-module github.com/iguanesolutions/auto-slog
+module github.com/iguanesolutions/auto-slog/v2
 
 go 1.24.2
 
